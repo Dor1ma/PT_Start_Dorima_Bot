@@ -1,9 +1,9 @@
 FROM postgres:14-alpine
 
-ENV POSTGRES_USER=$DB_USER
-ENV POSTGRES_PASSWORD=$DB_PASSWORD
-ENV POSTGRES_DB=$DB_DATABASE
-ENV POSTGRES_HOST=$DB_HOST
+ENV POSTGRES_USER=replicator
+ENV POSTGRES_PASSWORD=replicator_password
+ENV POSTGRES_DB=postgres
+ENV POSTGRES_HOST=postgres_primary
 
 RUN echo "#!/bin/bash" > /init.sh && \
     echo "rm -rf /var/lib/postgresql/data/*" >> /init.sh && \

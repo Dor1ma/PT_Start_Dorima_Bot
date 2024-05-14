@@ -24,24 +24,22 @@ except Exception as e:
 
 
 def get_repl_logs(update: Update, context: CallbackContext) -> None:
-    dbHost = os.getenv('DB_HOST')
-    dbUser = os.getenv('RM_USER')
-    dbPass = os.getenv('RM_PASSWORD')
-    DBclient = paramiko.SSHClient()
-    DBclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    DBclient.connect(hostname=dbHost, username=dbUser, password=dbPass, port=port)
-    stdin, stdout, stderr = DBclient.exec_command('cat /var/log/postgresql/postgresql-14-main.log | tail -n 20')
+    if connection_established:
+        command = f'docker logs -n 15 db_container'
+        stdin, stdout, stderr = client.exec_command(command)
 
-    stdout_data = stdout.read().decode('utf-8')
-    stderr_data = stderr.read().decode('utf-8')
+        stdout_data = stdout.read().decode('utf-8')
+        stderr_data = stderr.read().decode('utf-8')
 
-    logs = stdout_data
+        logs = stderr_data
 
-    replication_logs = [line for line in logs.split('\n') if 'replication' in line.lower()]
-    if replication_logs:
-        update.message.reply_text('\n'.join(replication_logs))
+        replication_logs = [line for line in logs.split('\n') if 'replication' in line.lower()]
+        if replication_logs:
+            update.message.reply_text('\n'.join(replication_logs))
+        else:
+            update.message.reply_text("Логи репликации не найдены")
     else:
-        update.message.reply_text("Логи репликации не найдены")
+        update.message.reply_text("Соединение не установлено")
 
 
 def execute_command(command: str, update: Update, _: CallbackContext) -> None:
