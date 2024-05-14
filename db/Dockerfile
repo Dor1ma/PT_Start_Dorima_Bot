@@ -8,4 +8,4 @@ ENV POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
 ENV POSTGRES_CONFIG="log_replication_commands = on"
 
 
-COPY ../db/init_01.sql /docker-entrypoint-initdb.d/init_01.sql
+COPY init_01.sql /docker-entrypoint-initdb.d/init_01.sql
