@@ -115,7 +115,7 @@ def apt_list_response(update: Update, context):
     if package_name.lower() == 'all':
         execute_command('dpkg --get-selections | head -n 100', update, context)
     else:
-        execute_command(f'dpkg --get-selections | grep {package_name}', update, context)
+        execute_command(f'dpkg --get-selections | grep {package_name} | head -n 100', update, context)
     return ConversationHandler.END
 
 
