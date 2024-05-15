@@ -1,12 +1,15 @@
+import logging
 import os
-from pathlib import Path
 
 import paramiko
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
-from dotenv import load_dotenv
 
-load_dotenv()
+logging.basicConfig(
+    filename='logfile.txt', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 
 host = os.getenv('RM_HOST')
 port = os.getenv('RM_PORT')
@@ -15,12 +18,20 @@ password = os.getenv('RM_PASSWORD')
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+connection_established = False
+
 try:
-    client.connect(hostname=host, username=username, password=password, port=int(port))
+    client.connect(hostname=host, username=username, password=password, port=port)
     connection_established = True
+except paramiko.AuthenticationException:
+    logger.info("Ошибка аутентификации")
+except paramiko.SSHException as e:
+    logger.info(f"Ошибка SSH: {e}")
+except paramiko.BadHostKeyException as e:
+    logger.info(f"Некорректный ключ хоста: {e}")
 except Exception as e:
-    print(f"Не удалось установить соединение: {e}")
-    connection_established = False
+    logger.info(f"Не удалось установить соединение: {e}")
+
 
 
 def get_repl_logs(update: Update, context: CallbackContext) -> None:
@@ -39,7 +50,7 @@ def get_repl_logs(update: Update, context: CallbackContext) -> None:
         else:
             update.message.reply_text("Логи репликации не найдены")
     else:
-        update.message.reply_text("Соединение не установлено")
+        update.message.reply_text("Соединение не установлено." + " " + host + " " + port + " " + username + " " + password)
 
 
 def execute_command(command: str, update: Update, _: CallbackContext) -> None:
@@ -47,7 +58,7 @@ def execute_command(command: str, update: Update, _: CallbackContext) -> None:
         stdin, stdout, stderr = client.exec_command(command)
         update.message.reply_text(stdout.read().decode())
     else:
-        update.message.reply_text("Соединение не установлено.")
+        update.message.reply_text("Соединение не установлено." + " " + host + " " + port + " " + username + " " + password)
 
 
 def get_release(update: Update, context: CallbackContext) -> None:

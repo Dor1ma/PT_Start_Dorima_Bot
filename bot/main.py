@@ -13,9 +13,6 @@ from utilities.email import find_email, email_response, email_store_decision
 from utilities.password import verify_password, password_response
 from utilities.phone import find_phone_number, findPhoneNumbers, phone_store_decision
 
-dotenv_path = Path('../.env')
-load_dotenv(dotenv_path=dotenv_path)
-
 TOKEN = os.getenv('TOKEN')
 
 logging.basicConfig(
