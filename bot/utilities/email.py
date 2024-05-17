@@ -1,6 +1,5 @@
 import os
 import re
-from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
@@ -25,7 +24,6 @@ def email_response(update: Update, context):
     else:
         update.message.reply_text('Email-адреса не найдены.')
         return ConversationHandler.END
-
 
 def email_store_decision(update: Update, context):
     decision = update.message.text.lower()
@@ -63,4 +61,34 @@ def email_store_decision(update: Update, context):
     else:
         update.message.reply_text('Неизвестный ответ. Пожалуйста, ответьте "да" или "нет".')
         return 'email_store_decision'
+    return ConversationHandler.END
+
+
+def get_emails(update: Update, context):
+    load_dotenv()
+
+    dbUser = os.getenv('DB_USER')
+    host = os.getenv('DB_HOST')
+    password = os.getenv('DB_PASSWORD')
+    db = os.getenv('DB_DATABASE')
+
+    try:
+        connection = psycopg2.connect(user=dbUser,
+                                      host=host,
+                                      password=password,
+                                      database=db)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM emails")
+        emails = cursor.fetchall()
+        if emails:
+            answer = f'Все имеющиеся адреса электронных почт:\n'
+            for row in emails:
+                answer += f'{row[0]}. {row[1]}\n'
+            update.message.reply_text(answer)
+        else:
+            update.message.reply_text('Email-адреса не найдены.')
+    except psycopg2.Error as e:
+        update.message.reply_text('Ошибка на стороне сервера: не удалось получить данные из базы данных')
+        return ConversationHandler.END
+
     return ConversationHandler.END

@@ -11,7 +11,11 @@ def verify_password(update: Update, context):
 
 def password_response(update: Update, context):
     password = update.message.text
-    if re.fullmatch(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
+    if re.match(r'^(?=.*[A-Z])'    
+        r'(?=.*[a-z])'        
+        r'(?=.*\d)'           
+        r'(?=.*[!@#$%^&*()?])'  
+        r'.{8,}$', password):
         update.message.reply_text('Пароль сложный.')
     else:
         update.message.reply_text('Пароль простой.')

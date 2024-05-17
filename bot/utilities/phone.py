@@ -1,6 +1,5 @@
 import os
 import re
-from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
@@ -15,7 +14,7 @@ def find_phone_number(update: Update, context):
 
 def findPhoneNumbers(update: Update, context):
     user_input = update.message.text
-    phoneNumRegex = re.compile( r'\+7\d{10}|8\d{10}|8\(\d{3}\)\d{7}|8 \d{3} \d{3} \d{2} \d{2}|8 \(\d{3}\) \d{3} \d{2} \d{2}|8-\d{3}-\d{3}-\d{2}-\d{2}')
+    phoneNumRegex = re.compile(r'(?:8|\+7)[\s\-]?(?:\(\d{3}\)|\d{3})[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}')
     phoneNumberList = phoneNumRegex.findall(user_input)
 
     if not phoneNumberList:
@@ -66,4 +65,34 @@ def phone_store_decision(update: Update, context):
     else:
         update.message.reply_text('Неизвестный ответ. Пожалуйста, ответьте "да" или "нет"')
         return 'phone_store_decision'
+    return ConversationHandler.END
+
+
+def get_phones(update: Update, context):
+    load_dotenv()
+
+    dbUser = os.getenv('DB_USER')
+    host = os.getenv('DB_HOST')
+    password = os.getenv('DB_PASSWORD')
+    db = os.getenv('DB_DATABASE')
+
+    try:
+        connection = psycopg2.connect(user=dbUser,
+                                      host=host,
+                                      password=password,
+                                      database=db)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM phones")
+        phones = cursor.fetchall()
+        if phones:
+            answer = f'Все имеющиеся номера телефонов:\n'
+            for row in phones:
+                answer += f'{row[0]}. {row[1]}\n'
+            update.message.reply_text(answer)
+        else:
+            update.message.reply_text('Номера телефонов не найдены.')
+    except psycopg2.Error as e:
+        update.message.reply_text('Ошибка на стороне сервера: не удалось получить данные из базы данных')
+        return ConversationHandler.END
+
     return ConversationHandler.END

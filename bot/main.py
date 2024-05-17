@@ -9,9 +9,9 @@ from remoteMachines.linux import get_release, get_uname, get_uptime, get_df, get
     get_critical, \
     get_ps, get_ss, get_apt_list, apt_list_response, get_services, get_repl_logs
 from utilities.basic import start, helpCommand
-from utilities.email import find_email, email_response, email_store_decision
+from utilities.email import find_email, email_response, email_store_decision, get_emails
 from utilities.password import verify_password, password_response
-from utilities.phone import find_phone_number, findPhoneNumbers, phone_store_decision
+from utilities.phone import find_phone_number, findPhoneNumbers, phone_store_decision, get_phones
 
 TOKEN = os.getenv('TOKEN')
 
@@ -52,6 +52,9 @@ def main():
         },
         fallbacks=[]
     )
+
+    dp.add_handler(CommandHandler("get_emails", get_emails))
+    dp.add_handler(CommandHandler("get_phones", get_phones))
 
     convHandlerAptList = ConversationHandler(
         entry_points=[CommandHandler('get_apt_list', get_apt_list)],
